@@ -27,5 +27,7 @@ This project is almost similar in use case with my other project https://github.
 - Go to the newly created step function > Start Execution > Give input as given in the file [Input](src/resources/SampleStepfunctionInput.json)
 - Click on Start Execution and workflow will start
 
+Medium post link : https://medium.com/@epraveenns/aws-step-function-call-back-pattern-using-aws-lambda-569678b0e02c
+
 Note : The RDS Database that will be created will have a default security group as we are not configuring any security group for it. That security group should be configured to allow incoming requests from Lambda or else Lambda cannot connect to the RDS instance.
 This can be done either by allowing all traffic from any network into the security group (Not recommended for serious use cases) or else by configuring a VPC for lambda, RDS and Stepfunction which is not covered in this project.
