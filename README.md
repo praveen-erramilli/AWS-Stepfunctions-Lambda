@@ -13,6 +13,8 @@ Also this project creates a slave instance for an RDS database. Doing this will 
 
 This project is almost similar in use case with my other project https://github.com/epraveenns/AWS-CloudFormation-Lambda
 
+![Flow](drawings/Flow.png)
+
 **Build:**
 - Install serverless framework using `npm install -g serverless`
 - Switch to this project directory and do `mvn clean install`
