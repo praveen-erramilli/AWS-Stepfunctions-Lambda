@@ -1,0 +1,32 @@
+{
+  "StartAt": "DBAllocation",
+  "States": {
+    "DBAllocation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Next": "DBUserCreation",
+      "Parameters":{
+        "FunctionName": "DBCreation",
+        "Payload":{
+          "input.$":"$",
+          "token.$":"$$.Task.Token"
+        }
+      }
+    },
+    "DBUserCreation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:<insert region here>:<insert account id here>:function:DBUserCreation",
+      "Next": "DBSchemaCreation"
+    },
+    "DBSchemaCreation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:<insert region here>:<insert account id here>:function:DBSchemaCreation",
+      "Next": "DBSlaveCreation"
+    },
+    "DBSlaveCreation": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:<insert region here>:<insert account id here>:function:DBSlaveCreation",
+      "End": true
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "DBAllocatedStorage": "20",
+  "DBClass": "db.t2.micro",
+  "DBName": "praveenDB",
+  "DBUser": "praveen",
+  "DBPassword": "password"
+}

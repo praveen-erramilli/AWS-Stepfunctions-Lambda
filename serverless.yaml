@@ -1,0 +1,163 @@
+service:
+  name: AWS-Stepfunctions-Lambda
+provider:
+  name: aws
+  runtime: java8
+  region: ${opt:region, 'us-east-1'} # Overwrite the default region used. Default is us-east-1
+  timeout: 30
+  memorySize: 512
+package:
+  artifact: target/AWS-Stepfunctions-Lambda-1.0-SNAPSHOT.jar
+deploymentBucket:
+  name: praveen-sls-bucket
+  blockPublicAccess: true
+functions:
+  DBCreation:
+    handler: lambda.DBCreation::handleRequest
+    name: DBCreation
+    role: !GetAtt [DBCreationRole,Arn]
+  StepFunctionNotifier:
+    handler: lambda.StepFunctionNotifier::handleRequest
+    name: StepFunctionNotifier
+    role: !GetAtt [StepFunctionNotifierRole, Arn]
+  DBUserCreation:
+    handler: lambda.DBUserCreation::handleRequest
+    name: DBUserCreation
+    role: !GetAtt [DBUserCreationRole, Arn]
+  DBSchemaCreation:
+    handler: lambda.DBSchemaCreation::handleRequest
+    name: DBSchemaCreation
+    role: !GetAtt [DBSchemaCreationRole, Arn]
+  DBSlaveCreation:
+    handler: lambda.DBSlaveCreation::handleRequest
+    name: DBSlaveCreation
+    role: !GetAtt [DBSlaveCreationRole, Arn]
+
+resources:
+  Resources:
+    DBCreationRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        RoleName: DBCreationRole
+        Policies:
+          - PolicyName: DBAllocationPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - cloudformation:CreateStack
+                    - cloudformation:UpdateStack
+                    - cloudformation:DescribeStacks
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - rds:CreateDBInstance
+                    - rds:DescribeEvents
+                    - rds:DescribeDBInstances
+                    - ec2:DescribeAccountAttributes
+                    - ec2:DescribeSecurityGroups
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource: !GetAtt [StepFunctionNotifierLambdaFunction,Arn]
+    StepFunctionNotifierRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        RoleName: StepFunctionNotifierRole
+        Policies:
+          - PolicyName: StepFunctionNotifierPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - states:SendTaskFailure
+                    - states:SendTaskSuccess
+                  Resource: "*"
+    DBUserCreationRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        RoleName: DBUserCreationRole
+        Policies:
+          - PolicyName: DBUserCreationPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - rds:DescribeDBInstances
+                  Resource: "*"
+    DBSchemaCreationRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        RoleName: DBSchemaCreationRole
+        Policies:
+          - PolicyName: DBSchemaCreationPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - rds:DescribeDBInstances
+                  Resource: "*"
+    DBSlaveCreationRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        RoleName: DBSlaveCreationRole
+        Policies:
+          - PolicyName: DBSlaveCreationPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - rds:DescribeEvents
+                    - rds:DescribeDBInstances
+                    - ec2:DescribeAccountAttributes
+                    - ec2:DescribeSecurityGroups
+                    - rds:RebootDBInstance
+                    - rds:CreateDBInstanceReadReplica
+                    - iam:PassRole
+                  Resource: "*"
