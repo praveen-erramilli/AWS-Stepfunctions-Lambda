@@ -8,9 +8,6 @@ provider:
   memorySize: 512
 package:
   artifact: target/AWS-Stepfunctions-Lambda-1.0-SNAPSHOT.jar
-deploymentBucket:
-  name: praveen-sls-bucket
-  blockPublicAccess: true
 functions:
   DBCreation:
     handler: lambda.DBCreation::handleRequest
